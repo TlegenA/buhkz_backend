@@ -12,6 +12,10 @@ SO_RATE = 0.035          # СО 3.5%, потолок 7 МЗП
 OSMS_EMPLOYER_RATE = 0.03  # ОСМС работодатель 3%
 SN_RATE = 0.095          # СН 9.5% (до вычета ОПВ и СО)
 
+# Ставки алиментов от чистой зарплаты (ст.139 Кодекса РК о браке и семье)
+ALIMONY_RATES = {1: 0.25, 2: 0.33}
+ALIMONY_RATE_3_PLUS = 0.50
+
 
 @dataclass
 class EmployerCosts:
@@ -30,6 +34,9 @@ class SalaryResult:
     ipn: int
     net_salary: int
     employer: EmployerCosts
+    alimony: int = 0
+    alimony_rate: float = 0.0
+    salary_after_alimony: int = 0
 
 
 def calculate_salary(
@@ -37,6 +44,7 @@ def calculate_salary(
     has_child_deduction: bool = False,
     children_count: int = 0,
     entity_type: str = "ТОО",
+    alimony_children: int = 0,
 ) -> SalaryResult:
     gross = int(gross)
 
@@ -72,6 +80,14 @@ def calculate_salary(
 
     total_cost = gross + so + osms_employer + sn
 
+    # 6. Алименты — удерживаются с чистой зарплаты
+    alimony = 0
+    alimony_rate = 0.0
+    if alimony_children > 0:
+        alimony_rate = ALIMONY_RATES.get(alimony_children, ALIMONY_RATE_3_PLUS)
+        alimony = round(net_salary * alimony_rate)
+    salary_after_alimony = net_salary - alimony
+
     return SalaryResult(
         gross=gross,
         opv=opv,
@@ -85,4 +101,7 @@ def calculate_salary(
             sn=sn,
             total_cost=total_cost,
         ),
+        alimony=alimony,
+        alimony_rate=alimony_rate,
+        salary_after_alimony=salary_after_alimony,
     )

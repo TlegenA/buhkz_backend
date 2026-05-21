@@ -11,6 +11,7 @@ class SalaryRequest(BaseModel):
     has_child_deduction: bool = False
     children_count: int = Field(0, ge=0, le=10)
     entity_type: str = "ТОО"
+    alimony_children: int = Field(0, ge=0, le=10, description="Кол-во детей на алименты (0 = нет)")
 
 
 class EmployerOut(BaseModel):
@@ -28,6 +29,9 @@ class SalaryOut(BaseModel):
     ipn: int
     net_salary: int
     employer: EmployerOut
+    alimony: int = 0
+    alimony_rate: float = 0.0
+    salary_after_alimony: int = 0
 
 
 @router.post("/salary", response_model=SalaryOut)
@@ -37,6 +41,7 @@ async def salary_calculator(body: SalaryRequest):
         has_child_deduction=body.has_child_deduction,
         children_count=body.children_count,
         entity_type=body.entity_type,
+        alimony_children=body.alimony_children,
     )
     return SalaryOut(
         gross=result.gross,
@@ -51,4 +56,7 @@ async def salary_calculator(body: SalaryRequest):
             sn=result.employer.sn,
             total_cost=result.employer.total_cost,
         ),
+        alimony=result.alimony,
+        alimony_rate=result.alimony_rate,
+        salary_after_alimony=result.salary_after_alimony,
     )
