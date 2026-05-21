@@ -7,11 +7,13 @@ from config import settings
 from database import create_tables
 from routers import calendar, calculator, rates
 from scheduler import scheduler
+from seed import seed as run_seed
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_tables()
+    await run_seed()
     scheduler.start()
     yield
     scheduler.shutdown()

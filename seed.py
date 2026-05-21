@@ -74,6 +74,44 @@ DEADLINES_2025 = [
     {"title": "СО, СН, ОСМС за июнь 2025",      "form_code": "200.00", "due_date": date(2025, 7, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
 ]
 
+DEADLINES_2026 = [
+    # ИПН у источника выплаты (ежемесячно) — форма 200.00
+    {"title": "ИПН у источника выплаты — январь 2026",   "form_code": "200.00", "due_date": date(2026, 2, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — февраль 2026",  "form_code": "200.00", "due_date": date(2026, 3, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — март 2026",     "form_code": "200.00", "due_date": date(2026, 4, 27),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — апрель 2026",   "form_code": "200.00", "due_date": date(2026, 5, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — май 2026",      "form_code": "200.00", "due_date": date(2026, 6, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — июнь 2026",     "form_code": "200.00", "due_date": date(2026, 7, 27),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — июль 2026",     "form_code": "200.00", "due_date": date(2026, 8, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — август 2026",   "form_code": "200.00", "due_date": date(2026, 9, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — сентябрь 2026", "form_code": "200.00", "due_date": date(2026, 10, 26), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — октябрь 2026",  "form_code": "200.00", "due_date": date(2026, 11, 25), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    {"title": "ИПН у источника выплаты — ноябрь 2026",   "form_code": "200.00", "due_date": date(2026, 12, 25), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "ИПН"},
+    # НДС (ежеквартально)
+    {"title": "НДС — I квартал 2026",  "form_code": "300.00", "due_date": date(2026, 5, 15),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "НДС"},
+    {"title": "НДС — II квартал 2026", "form_code": "300.00", "due_date": date(2026, 8, 17),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "НДС"},
+    {"title": "НДС — III квартал 2026","form_code": "300.00", "due_date": date(2026, 11, 16), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "НДС"},
+    {"title": "НДС — IV квартал 2026", "form_code": "300.00", "due_date": date(2027, 2, 16),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "НДС"},
+    # КПН
+    {"title": "КПН — авансовые платежи II–IV кв. 2026", "form_code": "101.02", "due_date": date(2026, 4, 20), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "КПН"},
+    {"title": "КПН — декларация за 2025 год",           "form_code": "100.00", "due_date": date(2026, 3, 31), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "КПН"},
+    # ИП — упрощённая декларация
+    {"title": "Упрощённая декларация ИП — I полугодие 2026",  "form_code": "910.00", "due_date": date(2026, 8, 17), "entity_type": "ИП", "tax_regime": "УСН", "tax_type": "ИПН"},
+    {"title": "Упрощённая декларация ИП — II полугодие 2026", "form_code": "910.00", "due_date": date(2027, 2, 16), "entity_type": "ИП", "tax_regime": "УСН", "tax_type": "ИПН"},
+    # СО / СН / ОСМС (ежемесячно, ТОО)
+    {"title": "СО, СН, ОСМС за январь 2026",    "form_code": "200.00", "due_date": date(2026, 2, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за февраль 2026",   "form_code": "200.00", "due_date": date(2026, 3, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за март 2026",      "form_code": "200.00", "due_date": date(2026, 4, 27),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за апрель 2026",    "form_code": "200.00", "due_date": date(2026, 5, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за май 2026",       "form_code": "200.00", "due_date": date(2026, 6, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за июнь 2026",      "form_code": "200.00", "due_date": date(2026, 7, 27),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за июль 2026",      "form_code": "200.00", "due_date": date(2026, 8, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за август 2026",    "form_code": "200.00", "due_date": date(2026, 9, 25),  "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за сентябрь 2026",  "form_code": "200.00", "due_date": date(2026, 10, 26), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за октябрь 2026",   "form_code": "200.00", "due_date": date(2026, 11, 25), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+    {"title": "СО, СН, ОСМС за ноябрь 2026",    "form_code": "200.00", "due_date": date(2026, 12, 25), "entity_type": "ТОО", "tax_regime": "Общий", "tax_type": "СО/СН/ОСМС"},
+]
+
 
 async def seed() -> None:
     await create_tables()
@@ -91,7 +129,7 @@ async def seed() -> None:
                 rates_added += 1
 
         deadlines_added = 0
-        for data in DEADLINES_2025:
+        for data in [*DEADLINES_2025, *DEADLINES_2026]:
             result = await session.execute(
                 select(TaxDeadline).where(
                     TaxDeadline.title == data["title"],
