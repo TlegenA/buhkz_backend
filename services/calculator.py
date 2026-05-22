@@ -13,8 +13,9 @@ OSMS_EMPLOYEE_RATE = 0.02
 OSMS_EMPLOYEE_CAP = MZP * 20    # 1 700 000
 
 # ИПН — базовый вычет 30 МРП; прогрессивная шкала
-BASE_DEDUCTION = MRP * 30       # 129 750
-IPN_THRESHOLD = 1_000_000
+# Порог 15% = 8 500 МРП в год (ст.363 НК РК 2026), месячный эквивалент:
+BASE_DEDUCTION = MRP * 30                       # 129 750
+IPN_THRESHOLD = MRP * 8_500 // 12              # ~3 063 541 тг/мес
 IPN_RATE_LOW = 0.10
 IPN_RATE_HIGH = 0.15
 
@@ -60,6 +61,7 @@ class SalaryResult:
     employer: EmployerCosts
     alimony: int = 0
     alimony_rate: float = 0.0
+    executor_fee: int = 0
     salary_after_alimony: int = 0
 
 
@@ -77,6 +79,7 @@ def calculate_salary(
     children_count: int = 0,
     entity_type: str = "ТОО",
     alimony_children: int = 0,
+    executor_fee: int = 0,
 ) -> SalaryResult:
     gross = int(gross)
 
@@ -115,13 +118,13 @@ def calculate_salary(
 
     total_cost = gross + opvr + so + osms_employer + sn
 
-    # 6. Алименты — с чистой зарплаты
+    # 6. Алименты + вознаграждение судебного исполнителя
     alimony = 0
     alimony_rate = 0.0
     if alimony_children > 0:
         alimony_rate = ALIMONY_RATES.get(alimony_children, ALIMONY_RATE_3_PLUS)
         alimony = round(net_salary * alimony_rate)
-    salary_after_alimony = net_salary - alimony
+    salary_after_alimony = net_salary - alimony - executor_fee
 
     return SalaryResult(
         gross=gross,
@@ -139,5 +142,6 @@ def calculate_salary(
         ),
         alimony=alimony,
         alimony_rate=alimony_rate,
+        executor_fee=executor_fee,
         salary_after_alimony=salary_after_alimony,
     )
