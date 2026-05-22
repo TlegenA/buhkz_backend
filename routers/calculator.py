@@ -12,7 +12,6 @@ class SalaryRequest(BaseModel):
     children_count: int = Field(0, ge=0, le=10)
     entity_type: str = "ТОО"
     alimony_children: int = Field(0, ge=0, le=10, description="Кол-во детей на алименты (0 = нет)")
-    executor_fee: int = Field(0, ge=0, description="Вознаграждение судебного исполнителя (тенге)")
 
 
 class EmployerOut(BaseModel):
@@ -45,7 +44,6 @@ async def salary_calculator(body: SalaryRequest):
         children_count=body.children_count,
         entity_type=body.entity_type,
         alimony_children=body.alimony_children,
-        executor_fee=body.executor_fee,
     )
     return SalaryOut(
         gross=result.gross,

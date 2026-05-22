@@ -79,7 +79,6 @@ def calculate_salary(
     children_count: int = 0,
     entity_type: str = "ТОО",
     alimony_children: int = 0,
-    executor_fee: int = 0,
 ) -> SalaryResult:
     gross = int(gross)
 
@@ -118,12 +117,14 @@ def calculate_salary(
 
     total_cost = gross + opvr + so + osms_employer + sn
 
-    # 6. Алименты + вознаграждение судебного исполнителя
+    # 6. Алименты + вознаграждение судебного исполнителя (1 МРП, ст. 117 Закона об исполнит. производстве)
     alimony = 0
     alimony_rate = 0.0
+    executor_fee = 0
     if alimony_children > 0:
         alimony_rate = ALIMONY_RATES.get(alimony_children, ALIMONY_RATE_3_PLUS)
         alimony = round(net_salary * alimony_rate)
+        executor_fee = MRP
     salary_after_alimony = net_salary - alimony - executor_fee
 
     return SalaryResult(
