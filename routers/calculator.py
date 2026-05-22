@@ -15,6 +15,7 @@ class SalaryRequest(BaseModel):
 
 
 class EmployerOut(BaseModel):
+    opvr: int
     so: int
     osms_employer: int
     sn: int
@@ -51,6 +52,7 @@ async def salary_calculator(body: SalaryRequest):
         ipn=result.ipn,
         net_salary=result.net_salary,
         employer=EmployerOut(
+            opvr=result.employer.opvr,
             so=result.employer.so,
             osms_employer=result.employer.osms_employer,
             sn=result.employer.sn,

@@ -1,16 +1,39 @@
 from dataclasses import dataclass
 
+# Базовые показатели 2026
+MZP = 85_000    # МЗП
+MRP = 4_325     # МРП
 
-# Актуальные показатели 2025
-MZP = 85000   # Минимальная зарплата
-MRP = 3932    # Месячный расчётный показатель
+# ОПВ (работник) — 10%, потолок 50 МЗП
+OPV_RATE = 0.10
+OPV_CAP = MZP * 50              # 4 250 000
 
-OPV_RATE = 0.10          # ОПВ 10%, потолок 50 МЗП
-OSMS_EMPLOYEE_RATE = 0.02  # ОСМС работник 2%
-IPN_RATE = 0.10          # ИПН 10%
-SO_RATE = 0.035          # СО 3.5%, потолок 7 МЗП
-OSMS_EMPLOYER_RATE = 0.03  # ОСМС работодатель 3%
-SN_RATE = 0.095          # СН 9.5% (до вычета ОПВ и СО)
+# ВОСМС (работник) — 2%, потолок 20 МЗП
+OSMS_EMPLOYEE_RATE = 0.02
+OSMS_EMPLOYEE_CAP = MZP * 20    # 1 700 000
+
+# ИПН — базовый вычет 30 МРП; прогрессивная шкала
+BASE_DEDUCTION = MRP * 30       # 129 750
+IPN_THRESHOLD = 1_000_000
+IPN_RATE_LOW = 0.10
+IPN_RATE_HIGH = 0.15
+
+# ОПВР (работодатель) — 3.5%, потолок 50 МЗП  (НОВЫЙ с 2026)
+OPVR_RATE = 0.035
+OPVR_CAP = MZP * 50
+
+# СО (работодатель) — 5% от (gross − ОПВ), база min 1МЗП max 7МЗП
+SO_RATE = 0.05
+SO_BASE_MIN = MZP
+SO_BASE_MAX = MZP * 7           # 595 000
+
+# ООСМС (работодатель) — 3%, потолок 40 МЗП
+OSMS_EMPLOYER_RATE = 0.03
+OSMS_EMPLOYER_CAP = MZP * 40    # 3 400 000
+
+# СН (работодатель) — 6% от (gross − ОПВ − ВОСМС), мин. база 14 МРП
+SN_RATE = 0.06
+SN_BASE_MIN = MRP * 14          # 60 550
 
 # Ставки алиментов от чистой зарплаты (ст.139 Кодекса РК о браке и семье)
 ALIMONY_RATES = {1: 0.25, 2: 0.33}
@@ -19,6 +42,7 @@ ALIMONY_RATE_3_PLUS = 0.50
 
 @dataclass
 class EmployerCosts:
+    opvr: int
     so: int
     osms_employer: int
     sn: int
@@ -39,6 +63,14 @@ class SalaryResult:
     salary_after_alimony: int = 0
 
 
+def _calc_ipn(ipn_base: int) -> int:
+    if ipn_base <= 0:
+        return 0
+    if ipn_base <= IPN_THRESHOLD:
+        return round(ipn_base * IPN_RATE_LOW)
+    return round(IPN_THRESHOLD * IPN_RATE_LOW + (ipn_base - IPN_THRESHOLD) * IPN_RATE_HIGH)
+
+
 def calculate_salary(
     gross: float,
     has_child_deduction: bool = False,
@@ -48,39 +80,42 @@ def calculate_salary(
 ) -> SalaryResult:
     gross = int(gross)
 
-    # 1. ОПВ — 10% от дохода, потолок 50 МЗП
-    opv_base = min(gross, MZP * 50)
-    opv = round(opv_base * OPV_RATE)
+    # 1. ОПВ — 10%, потолок 50 МЗП
+    opv = round(min(gross, OPV_CAP) * OPV_RATE)
 
-    # 2. ОСМС работника — 2% от дохода
-    osms_employee = round(gross * OSMS_EMPLOYEE_RATE)
+    # 2. ВОСМС работника — 2%, потолок 20 МЗП
+    osms_employee = round(min(gross, OSMS_EMPLOYEE_CAP) * OSMS_EMPLOYEE_RATE)
 
-    # 3. База ИПН с вычетами
-    ipn_deduction = MZP  # стандартный вычет 1 МЗП
+    # 3. База ИПН = gross − ОПВ − ВОСМС − базовый вычет (30 МРП)
+    extra_deduction = 0
     if has_child_deduction and children_count > 0:
-        # вычет на детей: 882 МРП на каждого ребёнка в год = 73.5 МРП в месяц
-        ipn_deduction += round(MRP * 882 / 12 * children_count)
+        # Социальный вычет на детей-инвалидов: 882 МРП в год на ребёнка
+        extra_deduction = round(MRP * 882 / 12 * children_count)
 
-    ipn_base = gross - opv - osms_employee - ipn_deduction
-    ipn = max(0, round(ipn_base * IPN_RATE))
+    ipn_base = gross - opv - osms_employee - BASE_DEDUCTION - extra_deduction
+    ipn = _calc_ipn(ipn_base)
 
     # 4. Чистая зарплата
     net_salary = gross - opv - osms_employee - ipn
 
     # 5. Расходы работодателя
-    # СО: 3.5% от (доход − МЗП), потолок база 7 МЗП
-    so_base = min(gross, MZP * 7)
-    so = max(0, round((so_base - MZP) * SO_RATE))
+    # ОПВР — 3.5%, потолок 50 МЗП (новый с 2026)
+    opvr = round(min(gross, OPVR_CAP) * OPVR_RATE)
 
-    # ОСМС работодателя: 3%
-    osms_employer = round(gross * OSMS_EMPLOYER_RATE)
+    # СО — 5% от (gross − ОПВ), база min 1МЗП, max 7МЗП
+    so_base = min(max(gross - opv, SO_BASE_MIN), SO_BASE_MAX)
+    so = round(so_base * SO_RATE)
 
-    # СН: 9.5% от дохода − ОПВ − СО (не менее 0)
-    sn = max(0, round(gross * SN_RATE - opv - so))
+    # ООСМС — 3%, потолок 40 МЗП
+    osms_employer = round(min(gross, OSMS_EMPLOYER_CAP) * OSMS_EMPLOYER_RATE)
 
-    total_cost = gross + so + osms_employer + sn
+    # СН — 6% от (gross − ОПВ − ВОСМС), мин. база 14 МРП
+    sn_base = max(gross - opv - osms_employee, SN_BASE_MIN)
+    sn = round(sn_base * SN_RATE)
 
-    # 6. Алименты — удерживаются с чистой зарплаты
+    total_cost = gross + opvr + so + osms_employer + sn
+
+    # 6. Алименты — с чистой зарплаты
     alimony = 0
     alimony_rate = 0.0
     if alimony_children > 0:
@@ -96,6 +131,7 @@ def calculate_salary(
         ipn=ipn,
         net_salary=net_salary,
         employer=EmployerCosts(
+            opvr=opvr,
             so=so,
             osms_employer=osms_employer,
             sn=sn,
