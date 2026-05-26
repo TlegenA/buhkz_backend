@@ -20,8 +20,10 @@ RATES_2025 = [
     {"code": "osms_er",   "name": "ОСМС (работодатель)", "value": 3.0,   "unit": "percent", "valid_from": date(2025, 1, 1), "valid_to": date(2025, 12, 31), "description": "Обязательное медстрахование, взнос работодателя"},
     {"code": "so",        "name": "СО",                  "value": 3.5,   "unit": "percent", "valid_from": date(2025, 1, 1), "valid_to": date(2025, 12, 31), "description": "Социальные отчисления (работодатель)"},
     {"code": "sn",        "name": "СН",                  "value": 9.5,   "unit": "percent", "valid_from": date(2025, 1, 1), "valid_to": date(2025, 12, 31), "description": "Социальный налог (работодатель)"},
-    {"code": "nds",       "name": "НДС",                 "value": 12.0,  "unit": "percent", "valid_from": date(2025, 1, 1), "valid_to": date(2025, 12, 31), "description": "Налог на добавленную стоимость"},
+    {"code": "opvr",      "name": "ОПВР (работодатель)",  "value": 2.5,   "unit": "percent", "valid_from": date(2025, 1, 1), "valid_to": date(2025, 12, 31), "description": "Обязательные пенсионные взносы работодателя (повышен до 3.5% с 2026)"},
+    {"code": "nds",       "name": "НДС",                 "value": 12.0,  "unit": "percent", "valid_from": date(2025, 1, 1), "valid_to": date(2025, 12, 31), "description": "Налог на добавленную стоимость (повышен до 16% с 2026)"},
     {"code": "kpn",       "name": "КПН",                 "value": 20.0,  "unit": "percent", "valid_from": date(2025, 1, 1), "valid_to": date(2025, 12, 31), "description": "Корпоративный подоходный налог"},
+    {"code": "vychet_base","name": "Базовый вычет ИПН",  "value": 14.0,  "unit": "mrp",     "valid_from": date(2025, 1, 1), "valid_to": date(2025, 12, 31), "description": "Повышен с 14 до 30 МРП/мес с 2026"},
 ]
 
 RATES_2026 = [
