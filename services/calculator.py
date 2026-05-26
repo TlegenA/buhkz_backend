@@ -169,7 +169,7 @@ def calculate_gross_from_net(
 
 
 IP_OSMS_MONTHLY = round(MZP * 1.4 * 0.05)       # 5 950 тг/мес (5% от 1.4 МЗП)
-SIMPLIFIED_HALFYEAR_LIMIT = MRP * 24_038         # 103 964 350 тг за полугодие
+SIMPLIFIED_YEAR_LIMIT = MRP * 600_000            # 2 595 000 000 тг в год (НК РК 2026)
 PATENT_YEAR_LIMIT = MRP * 3_528                  # 15 258 600 тг в год
 
 
@@ -180,7 +180,9 @@ class IpTaxResult:
     period_months: int
     ip_tax: int
     opv: int
+    opvr: int
     osms: int
+    so: int
     total: int
     income_limit: int
     income_remaining: int
@@ -195,14 +197,29 @@ def calculate_ip_tax(
     monthly_income = income // max(months, 1)
 
     if mode == "simplified":
-        ip_tax = round(income * 0.03)
-        income_limit = round(SIMPLIFIED_HALFYEAR_LIMIT * months / 6)
+        ip_tax = round(income * 0.04)   # 4% — упрощённая декларация (НК РК 2026)
+        income_limit = round(SIMPLIFIED_YEAR_LIMIT * months / 12)
     else:
         ip_tax = round(income * 0.01)
         income_limit = round(PATENT_YEAR_LIMIT * months / 12)
 
-    opv = round(min(monthly_income, OPV_CAP) * OPV_RATE) * months
+    # ОПВ: 10% от задекларированного дохода, мин. 10% от 1 МЗП
+    opv_monthly = max(round(min(monthly_income, OPV_CAP) * OPV_RATE), round(MZP * OPV_RATE))
+    opv = opv_monthly * months
+
+    # ОПВР: 3.5% от задекларированного дохода
+    opvr_monthly = round(min(monthly_income, OPV_CAP) * OPVR_RATE)
+    opvr = opvr_monthly * months
+
+    # ВОСМС: 5% от 1.4 МЗП (фиксированная)
     osms = IP_OSMS_MONTHLY * months
+
+    # СО: 5% от (доход − ОПВ), мин. 5% от 1 МЗП
+    so_base_monthly = max(monthly_income - opv_monthly, MZP)
+    so_monthly = round(min(so_base_monthly, SO_BASE_MAX) * SO_RATE)
+    so = so_monthly * months
+
+    total = ip_tax + opv + opvr + osms + so
 
     return IpTaxResult(
         mode=mode,
@@ -210,8 +227,10 @@ def calculate_ip_tax(
         period_months=months,
         ip_tax=ip_tax,
         opv=opv,
+        opvr=opvr,
         osms=osms,
-        total=ip_tax + opv + osms,
+        so=so,
+        total=total,
         income_limit=income_limit,
         income_remaining=max(0, income_limit - income),
     )

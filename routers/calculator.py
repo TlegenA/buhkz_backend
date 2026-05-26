@@ -51,7 +51,9 @@ class IpTaxOut(BaseModel):
     period_months: int
     ip_tax: int
     opv: int
+    opvr: int
     osms: int
+    so: int
     total: int
     income_limit: int
     income_remaining: int
@@ -172,7 +174,9 @@ async def ip_calculator(body: IpRequest):
         period_months=r.period_months,
         ip_tax=r.ip_tax,
         opv=r.opv,
+        opvr=r.opvr,
         osms=r.osms,
+        so=r.so,
         total=r.total,
         income_limit=r.income_limit,
         income_remaining=r.income_remaining,
