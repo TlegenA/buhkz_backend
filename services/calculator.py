@@ -168,6 +168,55 @@ def calculate_gross_from_net(
     return calculate_salary(round((lo + hi) / 2), has_child_deduction, children_count, entity_type, alimony_children)
 
 
+IP_OSMS_MONTHLY = round(MZP * 1.4 * 0.05)       # 5 950 тг/мес (5% от 1.4 МЗП)
+SIMPLIFIED_HALFYEAR_LIMIT = MRP * 24_038         # 103 964 350 тг за полугодие
+PATENT_YEAR_LIMIT = MRP * 3_528                  # 15 258 600 тг в год
+
+
+@dataclass
+class IpTaxResult:
+    mode: str
+    income: int
+    period_months: int
+    ip_tax: int
+    opv: int
+    osms: int
+    total: int
+    income_limit: int
+    income_remaining: int
+
+
+def calculate_ip_tax(
+    income: float,
+    mode: str = "simplified",
+    months: int = 6,
+) -> IpTaxResult:
+    income = round(income)
+    monthly_income = income // max(months, 1)
+
+    if mode == "simplified":
+        ip_tax = round(income * 0.03)
+        income_limit = round(SIMPLIFIED_HALFYEAR_LIMIT * months / 6)
+    else:
+        ip_tax = round(income * 0.01)
+        income_limit = round(PATENT_YEAR_LIMIT * months / 12)
+
+    opv = round(min(monthly_income, OPV_CAP) * OPV_RATE) * months
+    osms = IP_OSMS_MONTHLY * months
+
+    return IpTaxResult(
+        mode=mode,
+        income=income,
+        period_months=months,
+        ip_tax=ip_tax,
+        opv=opv,
+        osms=osms,
+        total=ip_tax + opv + osms,
+        income_limit=income_limit,
+        income_remaining=max(0, income_limit - income),
+    )
+
+
 @dataclass
 class VacationResult:
     gross_monthly: int

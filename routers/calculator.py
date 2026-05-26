@@ -6,6 +6,7 @@ from services.calculator import (
     calculate_gross_from_net,
     calculate_vacation,
     calculate_sick_leave,
+    calculate_ip_tax,
 )
 
 router = APIRouter(prefix="/api/calculator", tags=["calculator"])
@@ -36,6 +37,24 @@ class SickLeaveRequest(BaseModel):
     gross_monthly: float = Field(..., gt=0)
     sick_days: int = Field(..., gt=0, le=365)
     seniority_years: float = Field(..., ge=0)
+
+
+class IpRequest(BaseModel):
+    income: float = Field(..., gt=0)
+    mode: str = Field("simplified", description="simplified — упрощёнка (3%), patent — патент (1%)")
+    months: int = Field(6, ge=1, le=12)
+
+
+class IpTaxOut(BaseModel):
+    mode: str
+    income: int
+    period_months: int
+    ip_tax: int
+    opv: int
+    osms: int
+    total: int
+    income_limit: int
+    income_remaining: int
 
 
 class EmployerOut(BaseModel):
@@ -141,4 +160,20 @@ async def sick_leave_calculator(body: SickLeaveRequest):
         coefficient=r.coefficient,
         seniority_label=r.seniority_label,
         sick_pay=r.sick_pay,
+    )
+
+
+@router.post("/ip", response_model=IpTaxOut)
+async def ip_calculator(body: IpRequest):
+    r = calculate_ip_tax(body.income, body.mode, body.months)
+    return IpTaxOut(
+        mode=r.mode,
+        income=r.income,
+        period_months=r.period_months,
+        ip_tax=r.ip_tax,
+        opv=r.opv,
+        osms=r.osms,
+        total=r.total,
+        income_limit=r.income_limit,
+        income_remaining=r.income_remaining,
     )

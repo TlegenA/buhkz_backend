@@ -70,6 +70,15 @@ async def get_rate_history(code: str, db: AsyncSession = Depends(get_db)):
     return rows
 
 
+@router.get("/all", response_model=list[TaxRateOut])
+async def get_rates_all_years(db: AsyncSession = Depends(get_db)):
+    """Все ставки за все годы — для страницы истории изменений."""
+    result = await db.execute(
+        select(TaxRate).order_by(TaxRate.code, TaxRate.valid_from)
+    )
+    return result.scalars().all()
+
+
 @router.get("/{code}", response_model=TaxRateOut)
 async def get_rate(code: str, db: AsyncSession = Depends(get_db)):
     # ADDED: rates module — возвращаем активную ставку (valid_to IS NULL)
