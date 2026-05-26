@@ -1,17 +1,41 @@
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from services.calculator import calculate_salary
+from services.calculator import (
+    calculate_salary,
+    calculate_gross_from_net,
+    calculate_vacation,
+    calculate_sick_leave,
+)
 
 router = APIRouter(prefix="/api/calculator", tags=["calculator"])
 
 
 class SalaryRequest(BaseModel):
-    gross_salary: float = Field(..., gt=0, description="Оклад до вычетов (тенге)")
+    gross_salary: float = Field(..., gt=0)
     has_child_deduction: bool = False
     children_count: int = Field(0, ge=0, le=10)
     entity_type: str = "ТОО"
-    alimony_children: int = Field(0, ge=0, le=10, description="Кол-во детей на алименты (0 = нет)")
+    alimony_children: int = Field(0, ge=0, le=10)
+
+
+class ReverseRequest(BaseModel):
+    net_salary: float = Field(..., gt=0)
+    has_child_deduction: bool = False
+    children_count: int = Field(0, ge=0, le=10)
+    entity_type: str = "ТОО"
+    alimony_children: int = Field(0, ge=0, le=10)
+
+
+class VacationRequest(BaseModel):
+    gross_monthly: float = Field(..., gt=0)
+    vacation_days: int = Field(..., gt=0, le=365)
+
+
+class SickLeaveRequest(BaseModel):
+    gross_monthly: float = Field(..., gt=0)
+    sick_days: int = Field(..., gt=0, le=365)
+    seniority_years: float = Field(..., ge=0)
 
 
 class EmployerOut(BaseModel):
@@ -36,15 +60,23 @@ class SalaryOut(BaseModel):
     salary_after_alimony: int = 0
 
 
-@router.post("/salary", response_model=SalaryOut)
-async def salary_calculator(body: SalaryRequest):
-    result = calculate_salary(
-        gross=body.gross_salary,
-        has_child_deduction=body.has_child_deduction,
-        children_count=body.children_count,
-        entity_type=body.entity_type,
-        alimony_children=body.alimony_children,
-    )
+class VacationOut(BaseModel):
+    gross_monthly: int
+    vacation_days: int
+    avg_daily: int
+    vacation_pay: int
+
+
+class SickLeaveOut(BaseModel):
+    gross_monthly: int
+    sick_days: int
+    avg_daily: int
+    coefficient: float
+    seniority_label: str
+    sick_pay: int
+
+
+def _salary_to_out(result) -> SalaryOut:
     return SalaryOut(
         gross=result.gross,
         opv=result.opv,
@@ -63,4 +95,49 @@ async def salary_calculator(body: SalaryRequest):
         alimony_rate=result.alimony_rate,
         executor_fee=result.executor_fee,
         salary_after_alimony=result.salary_after_alimony,
+    )
+
+
+@router.post("/salary", response_model=SalaryOut)
+async def salary_calculator(body: SalaryRequest):
+    return _salary_to_out(calculate_salary(
+        gross=body.gross_salary,
+        has_child_deduction=body.has_child_deduction,
+        children_count=body.children_count,
+        entity_type=body.entity_type,
+        alimony_children=body.alimony_children,
+    ))
+
+
+@router.post("/reverse", response_model=SalaryOut)
+async def reverse_calculator(body: ReverseRequest):
+    return _salary_to_out(calculate_gross_from_net(
+        net=body.net_salary,
+        has_child_deduction=body.has_child_deduction,
+        children_count=body.children_count,
+        entity_type=body.entity_type,
+    ))
+
+
+@router.post("/vacation", response_model=VacationOut)
+async def vacation_calculator(body: VacationRequest):
+    r = calculate_vacation(body.gross_monthly, body.vacation_days)
+    return VacationOut(
+        gross_monthly=r.gross_monthly,
+        vacation_days=r.vacation_days,
+        avg_daily=r.avg_daily,
+        vacation_pay=r.vacation_pay,
+    )
+
+
+@router.post("/sick-leave", response_model=SickLeaveOut)
+async def sick_leave_calculator(body: SickLeaveRequest):
+    r = calculate_sick_leave(body.gross_monthly, body.sick_days, body.seniority_years)
+    return SickLeaveOut(
+        gross_monthly=r.gross_monthly,
+        sick_days=r.sick_days,
+        avg_daily=r.avg_daily,
+        coefficient=r.coefficient,
+        seniority_label=r.seniority_label,
+        sick_pay=r.sick_pay,
     )

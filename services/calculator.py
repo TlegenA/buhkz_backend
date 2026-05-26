@@ -146,3 +146,76 @@ def calculate_salary(
         executor_fee=executor_fee,
         salary_after_alimony=salary_after_alimony,
     )
+
+
+def calculate_gross_from_net(
+    net: float,
+    has_child_deduction: bool = False,
+    children_count: int = 0,
+    entity_type: str = "ТОО",
+) -> SalaryResult:
+    """Бинарный поиск: найти gross, при котором net_salary == net."""
+    net = round(net)
+    lo, hi = float(net), float(net) * 3.0
+    for _ in range(60):
+        mid = (lo + hi) / 2
+        r = calculate_salary(mid, has_child_deduction, children_count, entity_type)
+        if r.net_salary < net:
+            lo = mid
+        else:
+            hi = mid
+    return calculate_salary(round((lo + hi) / 2), has_child_deduction, children_count, entity_type)
+
+
+@dataclass
+class VacationResult:
+    gross_monthly: int
+    vacation_days: int
+    avg_daily: int
+    vacation_pay: int
+
+
+def calculate_vacation(gross_monthly: float, vacation_days: int) -> VacationResult:
+    """Среднедневной заработок = среднемесячный / 29.3 (ст. 109 ТК РК)."""
+    gross_monthly = round(gross_monthly)
+    avg_daily = round(gross_monthly / 29.3)
+    return VacationResult(
+        gross_monthly=gross_monthly,
+        vacation_days=vacation_days,
+        avg_daily=avg_daily,
+        vacation_pay=avg_daily * vacation_days,
+    )
+
+
+@dataclass
+class SickLeaveResult:
+    gross_monthly: int
+    sick_days: int
+    avg_daily: int
+    coefficient: float
+    seniority_label: str
+    sick_pay: int
+
+
+def calculate_sick_leave(
+    gross_monthly: float,
+    sick_days: int,
+    seniority_years: float,
+) -> SickLeaveResult:
+    """Коэффициент по непрерывному стажу (ст. 133 Социального кодекса РК)."""
+    gross_monthly = round(gross_monthly)
+    if seniority_years < 1:
+        coeff, label = 0.60, "до 1 года"
+    elif seniority_years < 5:
+        coeff, label = 0.80, "от 1 до 5 лет"
+    else:
+        coeff, label = 1.00, "свыше 5 лет"
+    avg_daily = round(gross_monthly / 29.3)
+    return SickLeaveResult(
+        gross_monthly=gross_monthly,
+        sick_days=sick_days,
+        avg_daily=avg_daily,
+        coefficient=coeff,
+        seniority_label=label,
+        sick_pay=round(avg_daily * sick_days * coeff),
+    )
