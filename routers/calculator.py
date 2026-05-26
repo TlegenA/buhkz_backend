@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from services.calculator import (
@@ -9,6 +10,7 @@ from services.calculator import (
     calculate_ip_tax,
     calculate_payroll,
 )
+from services.payroll_excel import build_payroll_workbook
 
 router = APIRouter(prefix="/api/calculator", tags=["calculator"])
 
@@ -246,4 +248,21 @@ async def payroll_calculator(body: PayrollRequest):
     return PayrollOut(
         employees=[PayrollEmployeeOut(**vars(row)) for row in result.employees],
         totals=PayrollTotalsOut(**vars(result.totals)),
+    )
+
+
+class PayrollExportRequest(BaseModel):
+    employees: list[PayrollEmployeeIn] = Field(..., min_length=1)
+    period: str = "Май 2026"
+
+
+@router.post("/payroll/export")
+async def payroll_export(body: PayrollExportRequest):
+    result = calculate_payroll([e.model_dump() for e in body.employees])
+    buf = build_payroll_workbook(result, body.period)
+    safe = body.period.replace(" ", "_")
+    return StreamingResponse(
+        buf,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="Vedomost_{safe}.xlsx"'},
     )
