@@ -288,3 +288,107 @@ def calculate_sick_leave(
         seniority_label=label,
         sick_pay=round(avg_daily * sick_days * coeff),
     )
+
+
+# ─── Пакетный расчёт зарплаты (ведомость) ─────────────────────────────────────
+
+@dataclass
+class PayrollEmployeeResult:
+    id: str
+    name: str
+    position: str
+    gross: int
+    opv: int
+    osms_employee: int
+    ipn_base: int
+    ipn: int
+    net_salary: int
+    alimony: int
+    executor_fee: int
+    to_pay: int        # net_salary − alimony − executor_fee
+    opvr: int
+    so: int
+    osms_employer: int
+    sn: int
+    total_cost: int    # затраты работодателя (gross + начисления)
+
+
+@dataclass
+class PayrollTotals:
+    gross: int
+    opv: int
+    osms_employee: int
+    ipn: int
+    net_salary: int
+    alimony: int
+    executor_fee: int
+    to_pay: int
+    opvr: int
+    so: int
+    osms_employer: int
+    sn: int
+    total_cost: int
+
+
+@dataclass
+class PayrollResult:
+    employees: list[PayrollEmployeeResult]
+    totals: PayrollTotals
+
+
+def calculate_payroll(
+    employees: list[dict],
+) -> PayrollResult:
+    """
+    Пакетный расчёт зарплаты.
+    employees — список словарей с полями:
+        id, name, position, gross_salary, children, alimony_children
+    """
+    rows: list[PayrollEmployeeResult] = []
+
+    for emp in employees:
+        r = calculate_salary(
+            gross=emp["gross_salary"],
+            children_count=emp.get("children", 0),
+            alimony_children=emp.get("alimony_children", 0),
+        )
+        rows.append(PayrollEmployeeResult(
+            id=emp["id"],
+            name=emp["name"],
+            position=emp.get("position", ""),
+            gross=r.gross,
+            opv=r.opv,
+            osms_employee=r.osms_employee,
+            ipn_base=r.ipn_base,
+            ipn=r.ipn,
+            net_salary=r.net_salary,
+            alimony=r.alimony,
+            executor_fee=r.executor_fee,
+            to_pay=r.salary_after_alimony,
+            opvr=r.employer.opvr,
+            so=r.employer.so,
+            osms_employer=r.employer.osms_employer,
+            sn=r.employer.sn,
+            total_cost=r.employer.total_cost,
+        ))
+
+    def _sum(field: str) -> int:
+        return sum(getattr(row, field) for row in rows)
+
+    totals = PayrollTotals(
+        gross=_sum("gross"),
+        opv=_sum("opv"),
+        osms_employee=_sum("osms_employee"),
+        ipn=_sum("ipn"),
+        net_salary=_sum("net_salary"),
+        alimony=_sum("alimony"),
+        executor_fee=_sum("executor_fee"),
+        to_pay=_sum("to_pay"),
+        opvr=_sum("opvr"),
+        so=_sum("so"),
+        osms_employer=_sum("osms_employer"),
+        sn=_sum("sn"),
+        total_cost=_sum("total_cost"),
+    )
+
+    return PayrollResult(employees=rows, totals=totals)

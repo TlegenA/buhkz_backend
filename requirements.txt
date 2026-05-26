@@ -11,3 +11,8 @@ beautifulsoup4==4.12.3
 lxml==5.3.0
 pydantic==2.9.2
 pydantic-settings==2.5.2
+# Phase 2 (auth) — установлены заранее, не используются до активации кабинета
+passlib[bcrypt]==1.7.4
+python-jose[cryptography]==3.3.0
+# Excel export
+openpyxl==3.1.5

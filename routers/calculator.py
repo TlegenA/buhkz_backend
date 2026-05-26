@@ -7,6 +7,7 @@ from services.calculator import (
     calculate_vacation,
     calculate_sick_leave,
     calculate_ip_tax,
+    calculate_payroll,
 )
 
 router = APIRouter(prefix="/api/calculator", tags=["calculator"])
@@ -180,4 +181,69 @@ async def ip_calculator(body: IpRequest):
         total=r.total,
         income_limit=r.income_limit,
         income_remaining=r.income_remaining,
+    )
+
+
+# ─── Пакетный расчёт (ведомость) ──────────────────────────────────────────────
+
+class PayrollEmployeeIn(BaseModel):
+    id: str
+    name: str
+    position: str = ""
+    gross_salary: int = Field(..., gt=0)
+    children: int = Field(0, ge=0, le=10)
+    alimony_children: int = Field(0, ge=0, le=10)
+
+
+class PayrollRequest(BaseModel):
+    employees: list[PayrollEmployeeIn] = Field(..., min_length=1)
+
+
+class PayrollEmployeeOut(BaseModel):
+    id: str
+    name: str
+    position: str
+    gross: int
+    opv: int
+    osms_employee: int
+    ipn_base: int
+    ipn: int
+    net_salary: int
+    alimony: int
+    executor_fee: int
+    to_pay: int
+    opvr: int
+    so: int
+    osms_employer: int
+    sn: int
+    total_cost: int
+
+
+class PayrollTotalsOut(BaseModel):
+    gross: int
+    opv: int
+    osms_employee: int
+    ipn: int
+    net_salary: int
+    alimony: int
+    executor_fee: int
+    to_pay: int
+    opvr: int
+    so: int
+    osms_employer: int
+    sn: int
+    total_cost: int
+
+
+class PayrollOut(BaseModel):
+    employees: list[PayrollEmployeeOut]
+    totals: PayrollTotalsOut
+
+
+@router.post("/payroll", response_model=PayrollOut)
+async def payroll_calculator(body: PayrollRequest):
+    result = calculate_payroll([e.model_dump() for e in body.employees])
+    return PayrollOut(
+        employees=[PayrollEmployeeOut(**vars(row)) for row in result.employees],
+        totals=PayrollTotalsOut(**vars(result.totals)),
     )
