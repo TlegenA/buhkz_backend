@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from urllib.parse import quote
 
 from services.calculator import (
     calculate_salary,
@@ -261,9 +262,13 @@ async def payroll_export(body: PayrollExportRequest):
     employees = [e.model_dump() for e in body.employees]
     result = calculate_payroll(employees)
     buf = build_payroll_workbook(result, body.period, employees)
-    safe = body.period.replace(" ", "_")
+    # RFC 5987: filename* с UTF-8 percent-encoding — все символы ASCII,
+    # поэтому latin-1 кодировка заголовка не ломается
+    ru_name = f"Ведомость_{body.period.replace(' ', '_')}.xlsx"
+    encoded = quote(ru_name, encoding="utf-8")
+    disposition = f"attachment; filename=\"Vedomost.xlsx\"; filename*=UTF-8''{encoded}"
     return StreamingResponse(
         buf,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": f'attachment; filename="Vedomost_{safe}.xlsx"'},
+        headers={"Content-Disposition": disposition},
     )
