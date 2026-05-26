@@ -197,12 +197,33 @@ def _build_employer_sheet(ws, result, period: str):
     ws.print_area = f"A1:{get_column_letter(last_col)}{tot_row + 3}"
 
 
+# ─── Лист с исходными данными (для импорта) ───────────────────────────────────
+
+def _build_data_sheet(ws, employees: list[dict]):
+    """
+    Скрытый лист '_data' с исходными параметрами сотрудников.
+    Используется кнопкой «Импорт» на фронтенде для восстановления списка
+    без повторного ввода данных. Содержит поля-входные параметры,
+    а не расчётные значения.
+    """
+    ws.title = "_data"
+    headers = ["id", "name", "position", "gross_salary", "children", "alimony_children"]
+    for col, h in enumerate(headers, 1):
+        ws.cell(row=1, column=col, value=h).font = Font(bold=True, size=9, name="Calibri")
+    for row_idx, emp in enumerate(employees, 2):
+        for col, key in enumerate(headers, 1):
+            ws.cell(row=row_idx, column=col, value=emp.get(key, ""))
+    ws.sheet_state = "hidden"
+
+
 # ─── Публичный API ────────────────────────────────────────────────────────────
 
-def build_payroll_workbook(result, period: str) -> io.BytesIO:
+def build_payroll_workbook(result, period: str, employees: list[dict] | None = None) -> io.BytesIO:
     wb = Workbook()
     _build_accruals_sheet(wb.active, result, period)
     _build_employer_sheet(wb.create_sheet(), result, period)
+    if employees:
+        _build_data_sheet(wb.create_sheet(), employees)
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)

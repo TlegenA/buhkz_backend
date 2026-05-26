@@ -258,8 +258,9 @@ class PayrollExportRequest(BaseModel):
 
 @router.post("/payroll/export")
 async def payroll_export(body: PayrollExportRequest):
-    result = calculate_payroll([e.model_dump() for e in body.employees])
-    buf = build_payroll_workbook(result, body.period)
+    employees = [e.model_dump() for e in body.employees]
+    result = calculate_payroll(employees)
+    buf = build_payroll_workbook(result, body.period, employees)
     safe = body.period.replace(" ", "_")
     return StreamingResponse(
         buf,
