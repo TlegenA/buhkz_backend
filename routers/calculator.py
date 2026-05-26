@@ -116,6 +116,7 @@ async def reverse_calculator(body: ReverseRequest):
         has_child_deduction=body.has_child_deduction,
         children_count=body.children_count,
         entity_type=body.entity_type,
+        alimony_children=body.alimony_children,
     ))
 
 

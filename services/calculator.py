@@ -153,6 +153,7 @@ def calculate_gross_from_net(
     has_child_deduction: bool = False,
     children_count: int = 0,
     entity_type: str = "ТОО",
+    alimony_children: int = 0,
 ) -> SalaryResult:
     """Бинарный поиск: найти gross, при котором net_salary == net."""
     net = round(net)
@@ -164,7 +165,7 @@ def calculate_gross_from_net(
             lo = mid
         else:
             hi = mid
-    return calculate_salary(round((lo + hi) / 2), has_child_deduction, children_count, entity_type)
+    return calculate_salary(round((lo + hi) / 2), has_child_deduction, children_count, entity_type, alimony_children)
 
 
 @dataclass
