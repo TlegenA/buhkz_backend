@@ -18,7 +18,7 @@ async def send_feedback(body: FeedbackRequest):
     if not settings.telegram_bot_token or not settings.telegram_chat_id:
         raise HTTPException(status_code=503, detail="Feedback service not configured")
 
-    parts = ["📩 <b>Обратная связь BuhKZ</b>"]
+    parts = ["📩 <b>Обратная связь BuhBase</b>"]
     if body.name:
         parts.append(f"👤 <b>Имя:</b> {body.name}")
     if body.email:

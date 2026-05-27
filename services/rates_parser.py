@@ -68,7 +68,7 @@ def _parse_value(raw: str) -> float | None:
 
 async def _fetch_text(url: str) -> str:
     async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-        resp = await client.get(url, headers={"User-Agent": "BuhKZ-RatesMonitor/1.0"})
+        resp = await client.get(url, headers={"User-Agent": "BuhBase-RatesMonitor/1.0"})
         resp.raise_for_status()
         return resp.text
 
@@ -118,13 +118,13 @@ async def send_alert_email(changes: list[dict], admin_email: str) -> None:
     if not changes:
         return
 
-    subject = f"[BuhKZ] Обнаружены изменения ставок ({len(changes)} шт.)"
+    subject = f"[BuhBase] Обнаружены изменения ставок ({len(changes)} шт.)"
     rows = "\n".join(
         f"  • {c['code'].upper()}: ожидалось {c['known_value']}, найдено {c['found_value']} ({c['source']})"
         for c in changes
     )
     body = (
-        f"Монитор BuhKZ обнаружил расхождения между известными значениями и данными на сайтах:\n\n"
+        f"Монитор BuhBase обнаружил расхождения между известными значениями и данными на сайтах:\n\n"
         f"{rows}\n\n"
         f"Проверьте актуальность значений и при необходимости обновите ставки через\n"
         f"  python scripts/update_rates.py\n"

@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="BuhKZ API",
+    title="BuhBase API",
     description="Сервис для бухгалтеров Казахстана: налоговый календарь, калькулятор зарплаты, справочник ставок",
     version="0.1.0",
     lifespan=lifespan,

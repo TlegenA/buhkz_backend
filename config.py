@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/buhkz"
-    cors_origins: str = "http://localhost:5173,http://localhost:3000,https://buhkz-front.vercel.app"
+    cors_origins: str = "http://localhost:5173,http://localhost:3000,https://buhkz-front.vercel.app,https://buhbase.kz,https://www.buhbase.kz"
     alert_email: str = ""
     admin_email: str = ""
     alert_from_email: str = ""
