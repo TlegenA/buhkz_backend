@@ -120,6 +120,7 @@ async def seed() -> None:
     await create_tables()
     async with AsyncSessionLocal() as session:
         rates_added = 0
+        rates_updated = 0
         for data in [*RATES_2025, *RATES_2026]:
             result = await session.execute(
                 select(TaxRate).where(
@@ -127,9 +128,20 @@ async def seed() -> None:
                     TaxRate.valid_from == data["valid_from"],
                 )
             )
-            if not result.scalar_one_or_none():
+            existing = result.scalar_one_or_none()
+            if existing is None:
                 session.add(TaxRate(**data))
                 rates_added += 1
+            else:
+                # Обновляем изменившиеся поля (ставка, описание, источник)
+                changed = False
+                for field in ("value", "name", "description", "valid_to", "nk_article", "source"):
+                    new_val = data.get(field)
+                    if new_val is not None and getattr(existing, field, None) != new_val:
+                        setattr(existing, field, new_val)
+                        changed = True
+                if changed:
+                    rates_updated += 1
 
         deadlines_added = 0
         for data in [*DEADLINES_2025, *DEADLINES_2026]:
@@ -144,7 +156,7 @@ async def seed() -> None:
                 deadlines_added += 1
 
         await session.commit()
-        print(f"Seed завершён: {rates_added} ставок, {deadlines_added} дедлайнов добавлено.")
+        print(f"Seed завершён: {rates_added} ставок добавлено, {rates_updated} обновлено, {deadlines_added} дедлайнов добавлено.")
 
 
 if __name__ == "__main__":
