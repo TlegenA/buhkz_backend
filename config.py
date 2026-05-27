@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     smtp_port: int = 587
     smtp_user: str = ""
     smtp_pass: str = ""
+    telegram_bot_token: str = ""
+    telegram_chat_id: str = ""
 
     @property
     def database_url_async(self) -> str:

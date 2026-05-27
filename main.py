@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
 from database import create_tables
-from routers import calendar, calculator, rates
+from routers import calendar, calculator, rates, feedback
 from scheduler import scheduler
 from seed import seed as run_seed
 
@@ -37,6 +37,7 @@ app.add_middleware(
 app.include_router(calendar.router)
 app.include_router(calculator.router)
 app.include_router(rates.router)
+app.include_router(feedback.router)
 
 
 @app.get("/health")
